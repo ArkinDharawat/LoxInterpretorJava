@@ -5,7 +5,8 @@ import java.util.List;
 import static com.craftinginterpreters.lox.TokenType.*;
 
 public class Parser {
-    private static class ParseError extends RuntimeException {}
+    private static class ParseError extends RuntimeException {
+    }
 
     private final List<Token> tokens;
     private int current = 0;
@@ -23,13 +24,51 @@ public class Parser {
     }
 
     private Expr expression() {
-         return equality();
+        return conditional();
     }
+
+    private Expr conditional() {
+        Expr expr = equality();
+
+        if(match(QUESTION)) {
+            Expr thenBranch = expression(); // precendence of left operator
+            consume(COLON, "Expect ':' after then branch of conditional expression.");
+            Expr elseBranch = conditional();
+            expr = new Expr.Conditional(expr, thenBranch, elseBranch);
+        }
+
+        return expr;
+    }
+
+    // TODO: Come back to this once you evaluate Statements
+    // Support of C comma-operator
+//    private Expr comma() {
+//
+//
+//                if (!check(RIGHT_PAREN)) {
+//                    do {
+//                        if (arguments.size() >= 8) {
+//                            error(peek(), "Cannot have more than 8 arguments.");
+//                        }
+//                        arguments.add(equality()); // <-- was expression().
+//                    } while (match(COMMA));
+//                }
+//
+//        Expr expr = equality();
+//
+//        while (match(COMMA)) {
+//            Token operator = previous();
+//            Expr right = equality();
+//            expr = new Expr.Binary(expr, operator, right);
+//        }
+//
+//        return expr;
+//    }
 
     private Expr equality() {
         Expr expr = comparison();
 
-        while(match(BANG_EQUAL, EQUAL_EQUAL)) {
+        while (match(BANG_EQUAL, EQUAL_EQUAL)) {
             Token operator = previous();
             Expr right = comparison();
             expr = new Expr.Binary(expr, operator, right);
@@ -41,7 +80,7 @@ public class Parser {
     private Expr comparison() {
         Expr expr = addition();
 
-        while(match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+        while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
             Token operator = previous();
             Expr right = addition();
             expr = new Expr.Binary(expr, operator, right);
@@ -75,12 +114,12 @@ public class Parser {
     }
 
     private Expr unary() {
-        if(match(BANG, MINUS)) {
+        if (match(BANG, MINUS)) {
             Token operator = previous();
             Expr right = unary();
             return new Expr.Unary(operator, right);
         }
-        return primary() ;
+        return primary();
     }
 
     // top-down so primary are stuff w. highest precedence
@@ -115,18 +154,18 @@ public class Parser {
     }
 
     private Token consume(TokenType type, String message) {
-        if(check(type)) return advance();
+        if (check(type)) return advance();
 
         throw error(peek(), message);
     }
 
     private boolean check(TokenType type) {
-        if(isAtEnd()) return false;
+        if (isAtEnd()) return false;
         return peek().type == type;
     }
 
     private Token advance() {
-        if(!isAtEnd()) current ++;
+        if (!isAtEnd()) current++;
         return previous();
     }
 
@@ -150,8 +189,8 @@ public class Parser {
     private void synchronize() {
         advance();
 
-        while(!isAtEnd()) {
-            if(previous().type == SEMICOLON) return;
+        while (!isAtEnd()) {
+            if (previous().type == SEMICOLON) return;
 
             switch (peek().type) {
                 case CLASS:
