@@ -63,8 +63,8 @@ class Interpreter implements Expr.Visitor<Object> {
                     return (double) left + (double) right;
                 }
                 if (left instanceof String || right instanceof String) {
-                    return stringify(left)  + stringify(right);
-                    }
+                    return stringify(left) + stringify(right);
+                }
 
                 throw new RuntimeError(expr.operator,
                         "Operands must be two numbers or two strings.");
@@ -82,7 +82,13 @@ class Interpreter implements Expr.Visitor<Object> {
                 return (double) left <= (double) right;
             case SLASH:
                 checkNumberOperand(expr.operator, left, right);
-                return (double) left / (double) right;
+                Double left_op = (double) left;
+                Double right_op = (double) right;
+
+                if (right_op == 0.) {
+                    throw new RuntimeError(expr.operator, "Division by 0 is undefined");
+                }
+                return left_op / right_op;
             case STAR:
                 checkNumberOperand(expr.operator, left, right);
                 return (double) left * (double) right;
@@ -136,7 +142,6 @@ class Interpreter implements Expr.Visitor<Object> {
 
         return object.toString();
     }
-
 
 
 }
