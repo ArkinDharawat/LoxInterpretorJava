@@ -37,14 +37,14 @@ class Interpreter implements Expr.Visitor<Object> {
 
     private boolean isTruthy(Object object) {
         if (object == null) return false; // null/nil is only object that's false
-        if(object instanceof Boolean) return (boolean) object;
+        if (object instanceof Boolean) return (boolean) object;
         return true;
     }
 
     private boolean isEqual(Object a, Object b) {
         // nil is only eq to nill
-        if(a == null && b == null) return true;
-        if(a == null) return false;
+        if (a == null && b == null) return true;
+        if (a == null) return false;
 
         return a.equals(b);
     }
@@ -57,9 +57,9 @@ class Interpreter implements Expr.Visitor<Object> {
         switch (expr.operator.type) {
             case MINUS:
                 checkNumberOperand(expr.operator, left, right);
-                return (double)left - (double)right;
+                return (double) left - (double) right;
             case PLUS:
-                if(left instanceof Double && right instanceof Double) {
+                if (left instanceof Double && right instanceof Double) {
                     return (double) left + (double) right;
                 }
                 if (left instanceof String && right instanceof String) {
@@ -69,24 +69,26 @@ class Interpreter implements Expr.Visitor<Object> {
                         "Operands must be two numbers or two strings.");
             case GREATER:
                 checkNumberOperand(expr.operator, left, right);
-                return (double)left > (double)right;
+                return (double) left > (double) right;
             case GREATER_EQUAL:
                 checkNumberOperand(expr.operator, left, right);
-                return (double)left >= (double)right;
+                return (double) left >= (double) right;
             case LESS:
                 checkNumberOperand(expr.operator, left, right);
-                return (double)left < (double)right;
+                return (double) left < (double) right;
             case LESS_EQUAL:
                 checkNumberOperand(expr.operator, left, right);
-                return (double)left <= (double)right;
+                return (double) left <= (double) right;
             case SLASH:
                 checkNumberOperand(expr.operator, left, right);
-                return (double)left / (double)right;
+                return (double) left / (double) right;
             case STAR:
                 checkNumberOperand(expr.operator, left, right);
-                return (double)left * (double)right;
-            case BANG_EQUAL: return !isEqual(left, right);
-            case EQUAL_EQUAL: return isEqual(left, right);
+                return (double) left * (double) right;
+            case BANG_EQUAL:
+                return !isEqual(left, right);
+            case EQUAL_EQUAL:
+                return isEqual(left, right);
         }
 
         // Unreacable - technically
@@ -103,13 +105,38 @@ class Interpreter implements Expr.Visitor<Object> {
     @Override
     public Object visitConditionalExpr(Expr.Conditional expr) {
         boolean cond = isTruthy(evaluate(expr.condition)); // check if true
-        if(cond) {
+        if (cond) {
             return evaluate(expr.thenBranch); // evaluate if branch
         } else {
             return evaluate(expr.elseBranch); // evaluate else branch
         }
     }
 
+    void interpret(Expr expression) {
+        try {
+            Object value = evaluate(expression);
+            System.out.println(stringify(value));
+        } catch (RuntimeError error) {
+            Lox.runtimeError(error);
+        }
+    }
+
+    private String stringify(Object object) {
+        if (object == null) return "nil";
+
+        // Hack. Work around Java adding ".0" to integer-valued doubles.
+        if (object instanceof Double) {
+            String text = object.toString();
+            if (text.endsWith(".0")) {
+                text = text.substring(0, text.length() - 2);
+            }
+            return text;
+        }
+
+        return object.toString();
+    }
+
 
 
 }
+
