@@ -33,6 +33,11 @@ class AstPrinter implements Expr.Visitor<String> {
         return parenthesize("ternary", expr.condition, expr.thenBranch, expr.elseBranch);
     }
 
+    @Override
+    public  String visitVariableExpr(Expr.Variable expr) {
+        return parenthesize(expr.name.lexeme); // no exprs, How do you define this in an AST ?
+    }
+
     private String parenthesize(String name, Expr... exprs) {
         StringBuilder builder = new StringBuilder();
 
