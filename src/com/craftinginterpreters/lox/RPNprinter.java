@@ -5,6 +5,10 @@ public class RPNprinter implements Expr.Visitor<String> {
         return expr.accept(this);
     }
 
+    /**
+     * Statements can't really be defined in RPN
+     */
+
     @Override
     public String visitBinaryExpr(Expr.Binary expr) {
         return expr.left.accept(this) + " " + expr.right.accept(this) + " " + expr.operator.lexeme + " ";
@@ -37,6 +41,11 @@ public class RPNprinter implements Expr.Visitor<String> {
         return expr.condition.accept(this) +
                 expr.thenBranch.accept(this) +
                 expr.elseBranch.accept(this) + " :?" + " ";
+    }
+
+    @Override
+    public  String visitVariableExpr(Expr.Variable expr) {
+        return expr.name + " "; // what can be RPN for variable name ?
     }
 
 
