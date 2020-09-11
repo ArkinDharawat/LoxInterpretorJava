@@ -1,12 +1,13 @@
 package com.craftinginterpreters.tool;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 
 public class GenerateAst {
-    public static void main(String[] args)  throws IOException {
-        if(args.length != 1) {
+    public static void main(String[] args) throws IOException {
+        if (args.length != 1) {
             System.err.println("Usage: generate_ast <output directory>");
             System.exit(64);
         }
@@ -18,9 +19,14 @@ public class GenerateAst {
                 "Unary    : Token operator, Expr right",
                 "Conditional: Expr condition, Expr thenBranch, Expr elseBranch"
         ));
+
+        defineAST(outputDir, "Stmt", Arrays.asList(
+                "Expression : Expr expression",
+                "Print      : Expr expression"
+        ));
     }
 
-    private  static void defineAST(String outputDir, String baseName, List<String> types) throws  IOException {
+    private static void defineAST(String outputDir, String baseName, List<String> types) throws IOException {
         String path = outputDir + "/" + baseName + ".java";
         PrintWriter writer = new PrintWriter(path, "UTF-8");
 
@@ -81,7 +87,7 @@ public class GenerateAst {
 
         // Fields
         writer.println();
-        for (String field: fields) {
+        for (String field : fields) {
             writer.println("    final " + field + ";");
         }
 
