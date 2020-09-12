@@ -48,6 +48,11 @@ public class RPNprinter implements Expr.Visitor<String> {
         return expr.name + " "; // what can be RPN for variable name ?
     }
 
+    @Override
+    public String visitAssignExpr(Expr.Assign expr) {
+        return "";
+    }
+
 
     public static void main(String[] args) {
         Expr expression = new Expr.Binary(

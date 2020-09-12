@@ -38,6 +38,11 @@ class AstPrinter implements Expr.Visitor<String> {
         return parenthesize(expr.name.lexeme); // no exprs, How do you define this in an AST ?
     }
 
+    @Override
+    public String visitAssignExpr(Expr.Assign expr) {
+        return ""; // TODO: implement later
+    }
+
     private String parenthesize(String name, Expr... exprs) {
         StringBuilder builder = new StringBuilder();
 
