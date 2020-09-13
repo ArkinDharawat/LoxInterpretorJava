@@ -9,6 +9,9 @@ public class Parser {
     private static class ParseError extends RuntimeException {
     }
 
+    private boolean allowExpression;
+    private boolean foundExpression = false;
+
     private final List<Token> tokens;
     private int current = 0;
 
@@ -20,6 +23,26 @@ public class Parser {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
             statements.add(declaration());
+        }
+
+        return statements;
+    }
+
+    List<Stmt> parseRepl() {
+        allowExpression = true; // allow expression
+
+        List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(declaration());
+
+            if (foundExpression) {
+                // Refer to author's code if issues
+                // Stmt last = statements.get(statements.size() - 1);
+                // return ((Stmt.Expression) last).expression;
+                return statements;
+            }
+
+            allowExpression = false;
         }
 
         return statements;
@@ -41,7 +64,7 @@ public class Parser {
     }
 
     private Stmt statement() {
-        if(match(PRINT)) return printStatement();
+        if (match(PRINT)) return printStatement();
         if (match(LEFT_BRACE)) return new Stmt.Block(block());
 
         return expressionStatement();
@@ -67,8 +90,13 @@ public class Parser {
 
     private Stmt expressionStatement() {
         Expr expr = expression();
-        consume(SEMICOLON, "Expect ';' after expression.");
-        return new Stmt.Expression(expr);
+        if (allowExpression && isAtEnd()) {
+            foundExpression = true; // repl-mode
+            return new Stmt.Print(expr); // treat as print statement
+        } else {
+            consume(SEMICOLON, "Expect ';' after expression."); // only consume ; in file-mode
+            return new Stmt.Expression(expr);
+        }
     }
 
     private List<Stmt> block() {
@@ -85,12 +113,12 @@ public class Parser {
     private Expr assignment() {
         Expr expr = conditional();
 
-        if(match(EQUAL)) {
+        if (match(EQUAL)) {
             Token equals = previous();
             Expr value = assignment(); // recursive bc = is right-associative
 
-            if(expr instanceof Expr.Variable) {
-                Token name = ((Expr.Variable)expr).name;
+            if (expr instanceof Expr.Variable) {
+                Token name = ((Expr.Variable) expr).name;
                 return new Expr.Assign(name, value);
             }
 
@@ -103,7 +131,7 @@ public class Parser {
     private Expr conditional() {
         Expr expr = equality();
 
-        if(match(QUESTION)) {
+        if (match(QUESTION)) {
             Expr thenBranch = expression(); // precendence of left operator
             consume(COLON, "Expect ':' after then branch of conditional expression.");
             Expr elseBranch = conditional();
