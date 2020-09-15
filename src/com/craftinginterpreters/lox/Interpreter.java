@@ -12,6 +12,19 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitLogicalExpr(Expr.Logical expr) {
+        Object left = evaluate(expr.left);
+
+        if (expr.operator.type == TokenType.OR) {
+            if (isTruthy(left)) return left;
+        } else {
+            if (!isTruthy(left)) return left;
+        }
+
+        return evaluate(expr.right);
+    }
+
+    @Override
     public Object visitGroupingExpr(Expr.Grouping expr) {
         return evaluate(expr.expression);
     }
@@ -46,6 +59,17 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
         evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitIfStmt(Stmt.If stmt) {
+        // same as that done in ternary op
+        if (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch);
+        } else if (stmt.elseBranch != null) {
+            execute(stmt.elseBranch);
+        }
         return null;
     }
 
@@ -184,8 +208,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     // my implementation of ternary - not in the book
     @Override
     public Object visitConditionalExpr(Expr.Conditional expr) {
-        boolean cond = isTruthy(evaluate(expr.condition)); // check if true
-        if (cond) {
+        if (isTruthy(evaluate(expr.condition))) {
             return evaluate(expr.thenBranch); // evaluate if branch
         } else {
             return evaluate(expr.elseBranch); // evaluate else branch

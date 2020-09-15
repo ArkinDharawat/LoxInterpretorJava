@@ -41,10 +41,26 @@ public class Parser {
     }
 
     private Stmt statement() {
-        if(match(PRINT)) return printStatement();
+        if (match(IF)) return ifStatement();
+        if (match(PRINT)) return printStatement();
         if (match(LEFT_BRACE)) return new Stmt.Block(block());
 
         return expressionStatement();
+    }
+
+    private Stmt ifStatement() {
+        consume(LEFT_PAREN, "Expect '(' after 'if'.");
+        Expr condition = expression();
+        consume(RIGHT_PAREN, "Expect ')' after if condition.");
+
+        Stmt thenBranch = statement();
+        Stmt elseBranch = null;
+
+        if (match(ELSE)) {
+            elseBranch = statement();
+        }
+
+        return new Stmt.If(condition, thenBranch, elseBranch);
     }
 
     private Stmt printStatement() {
@@ -83,14 +99,15 @@ public class Parser {
     }
 
     private Expr assignment() {
-        Expr expr = conditional();
+        Expr expr = or();
+        //conditional();
 
-        if(match(EQUAL)) {
+        if (match(EQUAL)) {
             Token equals = previous();
             Expr value = assignment(); // recursive bc = is right-associative
 
-            if(expr instanceof Expr.Variable) {
-                Token name = ((Expr.Variable)expr).name;
+            if (expr instanceof Expr.Variable) {
+                Token name = ((Expr.Variable) expr).name;
                 return new Expr.Assign(name, value);
             }
 
@@ -100,10 +117,34 @@ public class Parser {
         return expr;
     }
 
+    private Expr or() {
+        Expr expr = and();
+
+        while (match(OR)) {
+            Token operator = previous();
+            Expr right = and();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private Expr and() {
+        Expr expr = conditional();
+
+        while (match(AND)) {
+            Token operator = previous();
+            Expr right = conditional();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+
+        return expr;
+    }
+
     private Expr conditional() {
         Expr expr = equality();
 
-        if(match(QUESTION)) {
+        if (match(QUESTION)) {
             Expr thenBranch = expression(); // precendence of left operator
             consume(COLON, "Expect ':' after then branch of conditional expression.");
             Expr elseBranch = conditional();
