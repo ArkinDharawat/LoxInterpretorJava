@@ -76,6 +76,7 @@ public class Lox {
         hadError = true;
     }
 
+
     static void error(Token token, String message) {
         if(token.type == TokenType.EOF) {
             report(token.line, " at end", message);

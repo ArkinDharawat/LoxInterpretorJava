@@ -44,6 +44,12 @@ public class RPNprinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitLogicalExpr(Expr.Logical expr) {
+        // like binary
+        return expr.left.accept(this) + " " + expr.right.accept(this) + " " + expr.operator.lexeme + " ";
+    }
+
+    @Override
     public  String visitVariableExpr(Expr.Variable expr) {
         return expr.name + " "; // what can be RPN for variable name ?
     }
