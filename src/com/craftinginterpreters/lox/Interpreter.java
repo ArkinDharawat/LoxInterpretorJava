@@ -223,14 +223,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
     }
 
-    //    void interpret(Expr expression) {
-//        try {
-//            Object value = evaluate(expression);
-//            System.out.println(stringify(value));
-//        } catch (RuntimeError error) {
-//            Lox.runtimeError(error);
-//        }
-//    }
     void interpret(List<Stmt> statements) {
         try {
             for (Stmt statement : statements) {
