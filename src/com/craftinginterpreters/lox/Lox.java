@@ -83,6 +83,13 @@ public class Lox {
         // Don't print syntax tree
         // System.out.println(new AstPrinter().print(expression));
 
+        // Resolve scopes
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
+
+        // Stop if there was a resolution error.
+        if (hadError) return;
+
         interpreter.interpret(statements);
     }
 

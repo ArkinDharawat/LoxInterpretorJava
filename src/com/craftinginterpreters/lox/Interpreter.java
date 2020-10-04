@@ -1,24 +1,32 @@
 package com.craftinginterpreters.lox;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     final Environment globals = new Environment();
     private Environment environment = globals;
+    private final Map<Expr, Integer> locals = new HashMap<>();
 
     Interpreter() {
         globals.define("clock", new LoxCallable() {
             @Override
-            public int arity() { return 0; }
+            public int arity() {
+                return 0;
+            }
 
             @Override
             public Object call(Interpreter interpreter,
                                List<Object> arguments) {
-                return (double)System.currentTimeMillis() / 1000.0;
+                return (double) System.currentTimeMillis() / 1000.0;
             }
 
             @Override
-            public String toString() { return "<native fn>"; }
+            public String toString() {
+                return "<native fn>";
+            }
         });
     }
 
@@ -53,6 +61,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     private void execute(Stmt stmt) {
         stmt.accept(this);
+    }
+
+    void resolve(Expr expr, int depth) {
+        locals.put(expr, depth);
     }
 
     void executeBlock(List<Stmt> statements, Environment environment) {
@@ -136,22 +148,44 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
 
-        environment.assign(expr.name, value);
+        Integer distance = locals.get(expr);
+        if (distance != null) {
+            environment.assignAt(distance, expr.name, value);
+        } else {
+            globals.assign(expr.name, value);
+        }
+
         return value; // return a value, but not in case of declaration
     }
 
 
-
+//    @Override
+//    public Object visitVariableExpr(Expr.Variable expr) {
+//        Object var_value = environment.get(expr.name);
+//
+//        if (var_value == uninitialized) {
+//            throw new RuntimeError(expr.name, "Variable must be initialized before use.");
+//        }
+//
+//        return var_value;
+//    }
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-        Object var_value =  environment.get(expr.name);
+    /* Statements and State visit-variable < Resolving and Binding call-look-up-variable
+        return environment.get(expr.name);
+    */
+        return lookUpVariable(expr.name, expr);
+    }
 
-        if(var_value == uninitialized) {
-            throw new RuntimeError(expr.name, "Variable must be initialized before use.");
+    private Object lookUpVariable(Token name, Expr expr) {
+        Integer distance = locals.get(expr);
+        if (distance != null) {
+            return environment.getAt(distance, name.lexeme);
+        } else {
+            return globals.get(name);
         }
+    }
 
-         return var_value;
-     }
 
     @Override
     public Object visitUnaryExpr(Expr.Unary expr) {
@@ -255,7 +289,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
 
 
-        LoxCallable function = (LoxCallable)callee;
+        LoxCallable function = (LoxCallable) callee;
         if (arguments.size() != function.arity()) {
             throw new RuntimeError(expr.paren, "Expected " +
                     function.arity() + " arguments but got " +
