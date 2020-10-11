@@ -58,11 +58,21 @@ public class RPNprinter implements Expr.Visitor<String> {
     public String visitAssignExpr(Expr.Assign expr) {
         return "";
     }
+
     @Override
     public String visitCallExpr(Expr.Call expr){
         return ""; // TODO: implement later
     }
 
+    @Override
+    public String visitGetExpr(Expr.Get expr) {
+        return  expr.name.lexeme + " " + expr.object.accept(this); // TODO: implement w. object later?
+    }
+
+    @Override
+    public String visitSetExpr(Expr.Set expr) {
+        return  expr.name.lexeme + " " + expr.object.accept(this); // TODO: implement w. object later?
+    }
 
     public static void main(String[] args) {
         Expr expression = new Expr.Binary(
