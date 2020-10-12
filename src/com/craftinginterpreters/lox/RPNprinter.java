@@ -74,6 +74,11 @@ public class RPNprinter implements Expr.Visitor<String> {
         return  expr.name.lexeme + " " + expr.object.accept(this); // TODO: implement w. object later?
     }
 
+    @Override
+    public String visitThisExpr(Expr.This expr) {
+        return "this." + expr.keyword.lexeme;
+    }
+
     public static void main(String[] args) {
         Expr expression = new Expr.Binary(
                 new Expr.Unary(
