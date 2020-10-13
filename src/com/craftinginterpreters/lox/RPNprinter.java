@@ -79,6 +79,11 @@ public class RPNprinter implements Expr.Visitor<String> {
         return "this." + expr.keyword.lexeme;
     }
 
+    @Override
+    public String visitSuperExpr (Expr.Super expr) {
+        return  "super." + expr.keyword.lexeme; // TODO: implement later
+    }
+
     public static void main(String[] args) {
         Expr expression = new Expr.Binary(
                 new Expr.Unary(
