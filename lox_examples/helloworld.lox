@@ -1,0 +1,17 @@
+/* block comment */
+/*
+block comment
+but
+longer
+*/
+/*
+* block comment
+* but
+* longer with
+* starsssss
+*/
+/*
+/* Nested comment */
+*/
+var orchid = "s";
+print "hello world"
