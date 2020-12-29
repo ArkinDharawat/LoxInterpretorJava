@@ -1,0 +1,8 @@
+class Doughnut {
+  cook() {
+    print this;
+    print "Fry until golden brown.";
+  }
+}
+
+Doughnut().cook();

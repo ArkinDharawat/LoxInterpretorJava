@@ -1,9 +1,8 @@
 package com.craftinginterpreters.lox;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
+import java.util.*;
 
 class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private static class Variable {
@@ -26,8 +25,6 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     // private final Stack<Map<String, Boolean>> scopes = new Stack<>();
     private final Stack<Map<String, Variable>> scopes = new Stack<>();
     private FunctionType currentFunction = FunctionType.NONE;
-
-
 
 
     Resolver(Interpreter interpreter) {
@@ -75,16 +72,28 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             currentClass = ClassType.SUBCLASS;
             resolve(stmt.superclass);
         }
-        // TODO: fix super
+        /*
+         * "this" and "super" are special variables that jump from declared to read
+         * Since these variables get defined when they are used, we don't mark the state
+         * as "DEFINED". Marking it as "READ" might be misleading so "DECLARED" is best here?
+         * */
         if (stmt.superclass != null) {
             beginScope();
-            scopes.peek().put("super", new Variable(stmt.superclass.name, VariableState.DEFINED)); // only create env if there is a superclass
+
+            scopes.peek().put("super", new Variable(
+                    new Token(TokenType.SUPER,
+                            "super " + stmt.superclass.name.lexeme,
+                            stmt.superclass.name.literal,
+                            stmt.superclass.name.line),
+                    VariableState.DECLARED)); // only create env if there is a superclass
         }
 
         beginScope();
-        // scopes.peek().put("this", true);
-        // TODO: DEFINED OR DECLARED? or maybe READ directly
-        scopes.peek().put("this", new Variable(stmt.name, VariableState.DEFINED));
+        scopes.peek().put("this", new Variable(new Token(TokenType.THIS,
+                "this " + stmt.name.lexeme,
+                stmt.name.literal,
+                stmt.name.line), VariableState.DECLARED));
+
         for (Stmt.Function method : stmt.methods) {
             FunctionType declaration = FunctionType.METHOD;
             if (method.name.lexeme.equals("init")) {
@@ -339,7 +348,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
                 interpreter.resolve(expr, scopes.size() - 1 - i);
 
                 // Mark variable as read
-                if(isRead){
+                if (isRead) {
                     scopes.get(i).get(name.lexeme).state = VariableState.READ;
                 }
 
