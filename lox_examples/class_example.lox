@@ -12,7 +12,7 @@ class BostonCream < Doughnut {
   }
 }
 
-var BC = Doughnut();
+var BC = BostonCream();
 BC.cook();
 // Prints:
 // Fry until golden brown.
