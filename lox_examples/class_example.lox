@@ -3,6 +3,7 @@ class Doughnut {
     print this;
     print "Fry until golden brown.";
   }
+
 }
 
 class BostonCream < Doughnut {
@@ -10,10 +11,14 @@ class BostonCream < Doughnut {
     super.cook();
     print "Pipe full of custard and coat with chocolate.";
   }
+  class cook_more() {
+      print "Pipe more!!";
+    }
 }
 
 var BC = BostonCream();
 BC.cook();
+BostonCream.cook_more();
 // Prints:
 // Fry until golden brown.
 // Pipe full of custard and coat with chocolate.

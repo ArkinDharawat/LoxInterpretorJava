@@ -102,6 +102,16 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             resolveFunction(method, declaration);
         }
 
+        for(Stmt.Function method: stmt.classMethods) {
+            beginScope();
+            scopes.peek().put("this", new Variable(new Token(TokenType.THIS,
+                    "this " + stmt.name.lexeme,
+                    stmt.name.literal,
+                    stmt.name.line), VariableState.DECLARED));
+            resolveFunction(method, FunctionType.METHOD);
+            endScope();
+        }
+
         if (stmt.superclass != null) endScope(); // only create env if there is a superclass
 
         endScope();
