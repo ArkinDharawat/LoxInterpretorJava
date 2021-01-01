@@ -24,14 +24,22 @@ class LoxFunction implements LoxCallable {
         return declaration.params.size();
     }
 
+    public boolean isGetter() {
+        return declaration.params == null;
+    }
+
     @Override
     public Object call(Interpreter interpreter, List<Object> arguments) {
         // Environment environment = new Environment(interpreter.globals); Global env
         Environment environment = new Environment(closure); // create closure during call
-        for (int i = 0; i < declaration.params.size(); i++) {
-            environment.define(declaration.params.get(i).lexeme,
-                    arguments.get(i)); // store value of arguments
+        // take care of getter-list
+        if(declaration.params != null) {
+            for (int i = 0; i < declaration.params.size(); i++) {
+                environment.define(declaration.params.get(i).lexeme,
+                        arguments.get(i)); // store value of arguments
+            }
         }
+
 
         try {
             interpreter.executeBlock(declaration.body, environment); // execute block
